@@ -88,7 +88,7 @@ public class FolderAdapter extends ArrayAdapter<String> {
 			check.setEnabled(true);
 		check.setTag(Integer.valueOf(position));
 		// set check state. only one can be checked
-		boolean status = (currentChecked == position) ? true : false;
+		boolean status = (currentChecked == position);// ? true : false;
 		check.setChecked(status);
 		return (row);
 	}

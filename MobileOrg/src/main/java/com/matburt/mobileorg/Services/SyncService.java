@@ -71,6 +71,14 @@ public class SyncService extends Service implements
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		if (intent == null) {
+            // the service is being restarted after
+            // its process has gone away, and it had previously returned anything
+            // except {@link #START_STICKY_COMPATIBILITY}.
+            // TODO: to handle this case ^^^
+            return 0;
+        }
+
 		String action = intent.getStringExtra(ACTION);
 		if (action != null && action.equals(START_ALARM))
 			setAlarm();
@@ -80,7 +88,7 @@ public class SyncService extends Service implements
 			this.syncRunning = true;
 			runSynchronizer();
 		}
-		return 0;
+		return 0; // FIXME: should this be the START_STICKY_COMPATIBILITY constant?
 	}
 
     public Synchronizer getSynchronizer() {

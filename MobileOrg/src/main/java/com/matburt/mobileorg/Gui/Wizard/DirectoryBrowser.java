@@ -15,7 +15,7 @@ public abstract class DirectoryBrowser<T> {
 	protected ArrayList<T> directoryListing = new ArrayList<T>();
 	protected ArrayList<String> directoryNames = new ArrayList<String>();	
 
-	protected String upOneLevel;
+	protected static String upOneLevel;// = context.getString(R.string.up_one_level);
 
 	public abstract void browseTo(int position);
 	protected abstract void browseTo(String directory);
@@ -23,10 +23,10 @@ public abstract class DirectoryBrowser<T> {
 
 	public DirectoryBrowser(Context context) {
 		this.context = context;
-		this.upOneLevel = context.getString(R.string.up_one_level);
+		this.upOneLevel = context.getString(R.string.up_one_level); // "Up one level"
 	}
 	
-	
+
 	public ArrayList<String> listFiles() {
 		return directoryNames;
 	}

@@ -17,9 +17,7 @@ import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.DropboxAPI.Account;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
-import com.dropbox.client2.session.AccessTokenPair;
 import com.dropbox.client2.session.AppKeyPair;
-import com.dropbox.client2.session.Session.AccessType;
 import com.matburt.mobileorg.Gui.Wizard.FolderAdapter;
 import com.matburt.mobileorg.Gui.Wizard.WizardView;
 import com.matburt.mobileorg.R;
@@ -39,7 +37,7 @@ public class DropboxWizard extends Wizard {
 
         /* TODO This is a hack to prevent NetworkOnMainThreadException to happen. This could be
            fixed properly by moving all communication with the dropbox API to a thread. */
-        StrictMode.ThreadPolicy policy = new StrictMode. ThreadPolicy.Builder().permitAll().build();
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 	}
 	
@@ -54,12 +52,10 @@ public class DropboxWizard extends Wizard {
 		
 		dropboxAccountInfo = (TextView) view.findViewById(R.id.wizard_dropbox_accountinfo);
 
-		AppKeyPair appKeys = new AppKeyPair(
-				context.getString(R.string.dropbox_consumer_key),
-				context.getString(R.string.dropbox_consumer_secret));
-		AndroidAuthSession session = new AndroidAuthSession(appKeys,
-				AccessType.DROPBOX);
-		
+		AppKeyPair appKeys = new AppKeyPair(context.getString(R.string.dropbox_consumer_key),	context.getString(R.string.dropbox_consumer_secret));
+
+		AndroidAuthSession session = new AndroidAuthSession(appKeys);
+
 		dropboxApi = new DropboxAPI<AndroidAuthSession>(session);
 
 		loginButton = (Button) view
@@ -72,7 +68,7 @@ public class DropboxWizard extends Wizard {
 					// need to clear the keys
 				} else {
 					dropboxLoginAttempted = true;
-					dropboxApi.getSession().startAuthentication(context);
+					dropboxApi.getSession().startOAuth2Authentication(context);
 				}
 			}
 		});
@@ -89,10 +85,13 @@ public class DropboxWizard extends Wizard {
 		// setup directory browser
 		DropboxDirectoryBrowser directory = new DropboxDirectoryBrowser(context, dropboxApi);
 		// setup directory browser adapter
-		directoryAdapter = new FolderAdapter(context, R.layout.folder_adapter_row,
-				directory.listFiles());
-		directoryAdapter
-				.setDoneButton((Button) view.findViewById(R.id.wizard_done_button));
+        // in View.getView
+		directoryAdapter = new FolderAdapter(
+                context
+                , R.layout.folder_adapter_row
+                , directory.listFiles()
+        );
+		directoryAdapter.setDoneButton((Button) view.findViewById(R.id.wizard_done_button));
 		// bind adapter to browser
 		directoryAdapter.setDirectoryBrowser(directory);
 		// bind adapter to listview
@@ -100,10 +99,10 @@ public class DropboxWizard extends Wizard {
 		folderList.setAdapter(directoryAdapter);
 		directoryAdapter.notifyDataSetChanged();
 		
-		setupDoneButton(view);
+		setupDoneButton(view); // onClick - saves settings, finishes current activity
 		wizardView.addPage(view);
-		wizardView.enablePage(1);
-		// enable nav buttons on that page
+		wizardView.enablePage(1); // setNavButtonStateOnPage is called inside for page-1
+		// !!! enables nav buttons on that page (page-2):
 		wizardView.setNavButtonStateOnPage(2, true, WizardView.LAST_PAGE);
 		
 		return view;
@@ -115,25 +114,21 @@ public class DropboxWizard extends Wizard {
 	}
 	
 	public void handleDropboxResume() {
-		if (dropboxLoginAttempted
-				&& dropboxApi.getSession().authenticationSuccessful()) {
+		if (dropboxLoginAttempted && dropboxApi.getSession().authenticationSuccessful()) {
 			dropboxLoginAttempted = false;
 			try {
 				// MANDATORY call to complete auth.
 				// Sets the access token on the session
 				dropboxApi.getSession().finishAuthentication();
-				AccessTokenPair tokens = dropboxApi.getSession()
-						.getAccessTokenPair();
-				storeKeys(tokens.key, tokens.secret);
-				Toast.makeText(context, "Logged in!", Toast.LENGTH_SHORT)
-						.show();
+                String accessToken = dropboxApi.getSession().getOAuth2AccessToken();
+				storeAccessToken(accessToken);
+				Toast.makeText(context, "Logged into Dropbox successfully!", Toast.LENGTH_SHORT).show();
 				try {
 					Account accountInfo = dropboxApi.accountInfo();
 					dropboxAccountInfo.setText("User: "
 							+ accountInfo.displayName + "; Id: "
 							+ String.valueOf(accountInfo.uid));
-				} catch (DropboxException e) {
-				}
+				} catch (DropboxException e) {}
 				loginButton.setEnabled(false);
 				createDropboxList();
 				wizardView.enablePage(1);
@@ -144,17 +139,11 @@ public class DropboxWizard extends Wizard {
 			}
 		}
 	}
-	
 
-	private void storeKeys(String key, String secret) {
-		// Save the access key for later
-		SharedPreferences prefs = PreferenceManager
-				.getDefaultSharedPreferences(context);
-		Editor edit = prefs.edit();
-		
-		edit.putString("dbPrivKey", key);
-		edit.putString("dbPrivSecret", secret);
-		edit.commit();
+	private void storeAccessToken(String strAccessToken) {
+		// Save the access token for later use
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+		prefs.edit().putString(context.getString(R.string.db_key_dropbox_access_token), strAccessToken).commit();
 	}
 
 	@Override
@@ -164,7 +153,7 @@ public class DropboxWizard extends Wizard {
 		Editor editor = prefs.edit();
 		
 		editor.putString("syncSource", "dropbox");
-		editor.putString("dropboxPath", directoryAdapter.getCheckedDirectory() + "/");
+		editor.putString(context.getString(R.string.db_key_dropbox_path), directoryAdapter.getCheckedDirectory() + "/");
 		editor.commit();
 	}
 }

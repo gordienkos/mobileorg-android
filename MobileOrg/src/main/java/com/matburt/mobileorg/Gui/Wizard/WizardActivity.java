@@ -57,22 +57,23 @@ public class WizardActivity extends Activity implements RadioGroup.OnCheckedChan
 		SharedPreferences srcPrefs = PreferenceManager
 				.getDefaultSharedPreferences(context);
 		String syncSource = srcPrefs.getString("syncSource", "");
-		
-		int id = -1;
-		if (syncSource == "")
+
+		if (syncSource == null || syncSource.isEmpty())
 			return;
-		
-		if (syncSource.equals("webdav")) 
+
+		int id = -1;
+
+		if ("webdav".equals(syncSource))
 			id = syncWebDav;
-		else if (syncSource.equals("sdcard")) 
+		else if ("sdcard".equals(syncSource))
 			id = syncSdCard;
-		else if (syncSource.equals("dropbox")) 
+		else if ("dropbox".equals(syncSource))
 			id = syncDropBox;
-		else if (syncSource.equals("ubuntu")) 
+		else if ("ubuntu".equals(syncSource))
 			id = syncUbuntuOne;
-        else if (syncSource.equals("scp")) 
+        else if ("scp".equals(syncSource))
 			id = syncSSH;
-		else if (syncSource.equals("null")) 
+		else if ("null".equals(syncSource))
 			id = syncNull;		
 		else 
 			return;
@@ -93,7 +94,6 @@ public class WizardActivity extends Activity implements RadioGroup.OnCheckedChan
 		if(activeWizard != null)
 			activeWizard.refresh();
 	}
-	
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {

@@ -3,10 +3,11 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.7.+'
+        classpath 'com.android.tools.build:gradle:1.2.3'
     }
 }
-apply plugin: 'android'
+
+apply plugin: 'com.android.application'
 
 repositories {
     mavenCentral()
@@ -14,31 +15,42 @@ repositories {
 
 dependencies {
     compile 'com.actionbarsherlock:actionbarsherlock:4.4.0@aar'
-    compile 'com.android.support:support-v4:13.0.+'
+    compile 'com.android.support:support-v4:22.1.1'
     compile 'com.jcraft:jsch:0.1.50'
     compile project(':libraries:locale')
-    compile fileTree(dir: 'libs', include: '*.jar')
+    //compile group: 'com.dropbox',
+    compile files('libs/dropbox-android-sdk-1.6.3.jar'
+            //, 'libs/extra/android.jar'
+            ,'libs/json_simple-1.1.jar')
+    //compile fileTree(dir: 'libs', include: '*.jar')
+    compile files('libs/CWAC-MergeAdapter.jar'
+            , 'libs/CWAC-SackOfViewsAdapter.jar'
+            , 'libs/apache-mime4j-0.6.jar'
+            , 'libs/httpcore-4.0.1.jar'
+            , 'libs/httpmime-4.0.3.jar'
+            , 'libs/signpost-commonshttp4-1.2.1.1.jar'
+            , 'libs/signpost-core-1.2.1.1.jar')
 }
 
 
-def getVersionName = { ->
-    def stdout = new ByteArrayOutputStream()
-    exec {
-        commandLine 'git', 'describe', '--tags'
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
-}
+//def getVersionName = { ->
+//    def stdout = new ByteArrayOutputStream()
+//    exec {
+//        commandLine 'git', 'describe', '--tags'
+//        standardOutput = stdout
+//    }
+//    return stdout.toString().trim()
+//}
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "19.0.1"
+    compileSdkVersion 22
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
         minSdkVersion 9
         targetSdkVersion 17
         versionCode 913
-        versionName getVersionName()
+        versionName 'sergo-testing' //getVersionName()
     }
 
     signingConfigs {
@@ -55,7 +67,7 @@ android {
             signingConfig signingConfigs.matburt
         }
         donate {
-            packageNameSuffix ".donate"
+            applicationIdSuffix ".donate"
             signingConfig signingConfigs.matburt
         }
         debug {

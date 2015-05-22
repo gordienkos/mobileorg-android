@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="dropbox_consumer_key">xxxxxxxxxxxxxxx</string>
-  <string name="dropbox_consumer_secret">xxxxxxxxxxxxxxx</string>
+  <string name="dropbox_consumer_key">621dcun7rtxsjrq</string>
+  <string name="dropbox_consumer_secret">gd02b22xtqqvx8b</string>
+  <string name="db_key_dropbox_access_token">dbPrivAccessToken</string>
+  <string name="db_key_dropbox_path">dropboxPath</string>
 </resources>
